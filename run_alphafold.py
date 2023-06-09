@@ -244,8 +244,9 @@ def predict_structure(
 
   # Run the models.
   num_models = len(model_runners)
-  for model_index, (model_name, model_runner) in enumerate(
-      model_runners.items()):
+#   ray.init(num_gpus=jax.local_device_count())
+  ray.init()
+  def run_one_model(num_models, model_index, model_name, model, ranking_confidences, timings, ranking_confidences, unrelaxed_pdbs, unrelaxed_proteins):
     logging.info('Running model %s on %s', model_name, fasta_name)
     t_0 = time.time()
     model_random_seed = model_index + random_seed * num_models
@@ -307,6 +308,11 @@ def predict_structure(
     unrelaxed_pdb_path = os.path.join(output_dir, f'unrelaxed_{model_name}.pdb')
     with open(unrelaxed_pdb_path, 'w') as f:
       f.write(unrelaxed_pdbs[model_name])
+  
+  
+  for model_index, (model_name, model_runner) in enumerate(
+      model_runners.items()):
+
 
   # Rank by model confidence.
   ranked_order = [
